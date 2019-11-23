@@ -153,6 +153,9 @@ workflows:
 
     # and the same for the backend
     - backend_install
+    - backend_test:
+        requires:
+          - backend_install
     - backend_build:
         requires:
           - backend_install
