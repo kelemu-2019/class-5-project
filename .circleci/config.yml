@@ -35,15 +35,8 @@ jobs:
     executor: node
     working_directory: ~/project/frontend
     steps:
-      - checkout:
-          path: ~/project
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
+      - attach_workspace:
+          at: ~/project/
       - run: mkdir -p reports/
       - run: yarn lint
       - run:
@@ -53,15 +46,6 @@ jobs:
           name: Run tests with JUnit as reporter
       - store_test_results:
           path: reports/
-      - persist_to_workspace:
-          paths:
-          - frontend/
-          root: ~/project
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-      
   frontend_build:
     executor: node
     working_directory: ~/project/frontend/
@@ -111,6 +95,21 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
       
+  backend_test:
+    executor: node
+    working_directory: ~/project/backend
+    steps:
+      - attach_workspace:
+          at: ~/project/
+      - run: mkdir -p reports/
+      - run: yarn lint
+      - run:
+          command: yarn test --ci --runInBand --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: reports/junit
+          name: Run tests with JUnit as reporter
+      - store_test_results:
+          path: reports/
   backend_build:
     executor: node
     working_directory: ~/project/backend/
