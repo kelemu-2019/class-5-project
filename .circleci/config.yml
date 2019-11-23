@@ -31,20 +31,37 @@ jobs:
     executor: node
     working_directory: ~/project/frontend/
     steps:
-      - run: find ./ | grep -v "node_modules"
       - attach_workspace:
           at: ~/project/
-      - run: find ./ | grep -v "node_modules"
       - run: yarn build
+      - persist_to_workspace:
+          paths:
+          - frontend/
+          root: ~/project
       # https://circleci.com/docs/2.0/configuration-reference/#store_artifacts
-      - store_artifacts:
-          path: ./build
+      # not needed because we manage the deployment artifacts on the firebase side
+      # - store_artifacts:
+      #     path: ./build
+  frontend_deploy:
+    executor: node
+    working_directory: ~/project/frontend/
+    steps:
+      - attach_workspace:
+          at: ~/project/
+      - run: yarn firebase deploy --token "$FIREBASE_TOKEN"
   
 workflows:
   version: 2
-  push:
+  branch:
     jobs:
     - frontend_install
     - frontend_build:
         requires:
           - frontend_install
+    - frontend_deploy:
+        filters:
+          branches:
+            only:
+              master
+        requires:
+          - frontend_build
