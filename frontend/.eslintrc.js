@@ -22,7 +22,7 @@ module.exports = {
     'jest',
   ],
   rules: {
-    "semi": 0,
+    "semi": "always",
     "react/jsx-one-expression-per-line": 0,
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
   },
